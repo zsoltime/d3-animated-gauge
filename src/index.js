@@ -16,6 +16,7 @@ const settings = {
   size: 150,
   thickness: 50,
 };
+let intervalId;
 
 const color = scaleLinear()
   .domain(settings.colorStops)
@@ -28,8 +29,9 @@ const gaugeArc = arc()
 
 const svg = select('#chart')
   .append('svg')
-  .attr('width', settings.size * 2)
-  .attr('height', settings.size + settings.padding)
+  .attr('viewBox', `0 0 ${settings.size * 2} ${settings.size + settings.padding}`)
+  .attr('width', settings.size * 4)
+  .attr('height', (settings.size + settings.padding) * 2)
   .attr('class', 'gauge');
 
 const chart = svg.append('g')
@@ -103,9 +105,37 @@ function updateGauge(v) {
 }
 
 let speed = settings.max / 50;
-updateGauge(speed);
+let isRunning = false;
+const toggleButton = document.querySelector('#toggle');
 
-setInterval(() => {
-  speed = speed > 85 ? (Math.random() * 100) : speed + (Math.random() * 10);
-  updateGauge(speed);
-}, 750);
+function startAnimation(btn) {
+  btn.classList.toggle('btn--is-running');
+  btn.innerText = 'Stop Animation';
+  isRunning = true;
+  intervalId = setInterval(() => {
+    speed = speed > 85 ? (Math.random() * 100) : speed + (Math.random() * 10);
+    updateGauge(speed);
+  }, 750);
+}
+
+function stopAnimation(btn) {
+  btn.classList.toggle('btn--is-running');
+  btn.innerText = 'Start Animation';
+  clearInterval(intervalId);
+  isRunning = false;
+}
+
+toggleButton.addEventListener('click', function toggle() {
+  if (isRunning) {
+    stopAnimation(this);
+  } else {
+    startAnimation(this);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    updateGauge(speed);
+    startAnimation(toggleButton);
+  }, 2000);
+});
